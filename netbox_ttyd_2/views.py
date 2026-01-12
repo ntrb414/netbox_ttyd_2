@@ -44,7 +44,12 @@ class DeviceTtyd2View(PermissionRequiredMixin, View):
         ttyd_path = plugin_config.get('ttyd_path', 'ttyd')
         sshpass_path = plugin_config.get('sshpass_path', 'sshpass')
 
-        # Construct command as a list for better security and argument handling
+        # Prepare environment with SSHPASS
+        env = os.environ.copy()
+        env['SSHPASS'] = password
+
+        # Construct command as a list
+        # We use 'sshpass -e' to read password from environment variable SSHPASS
         full_cmd = [
             ttyd_path if os.name != 'nt' else f"{ttyd_path}.exe",
             "-p", str(port),
@@ -52,18 +57,22 @@ class DeviceTtyd2View(PermissionRequiredMixin, View):
             "--idle-timeout", "200",
             "--once",
             sshpass_path,
-            "-p", password,
+            "-e",  # Read password from SSHPASS env var
             "ssh",
-            "-t",  # Force pseudo-terminal allocation
+            "-t",
             "-o", "StrictHostKeyChecking=no",
             "-o", "UserKnownHostsFile=/dev/null",
             "-o", "ConnectTimeout=10",
+            "-o", "PreferredAuthentications=password",
             f"{username}@{ip}"
         ]
             
         try:
-            # Start ttyd process using list format (shell=False by default)
-            subprocess.Popen(full_cmd)
+            # Log the command for debugging (password is hidden in env)
+            print(f"DEBUG: Starting ttyd on port {port} for {username}@{ip}")
+            
+            # Start ttyd process
+            subprocess.Popen(full_cmd, env=env)
             
             # Give ttyd a moment to start
             time.sleep(1)
