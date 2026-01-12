@@ -44,19 +44,26 @@ class DeviceTtyd2View(PermissionRequiredMixin, View):
         ttyd_path = plugin_config.get('ttyd_path', 'ttyd')
         sshpass_path = plugin_config.get('sshpass_path', 'sshpass')
 
-        # Construct command
-        # -p: port
-        # -i 0.0.0.0: listen on all interfaces
-        # --idle-timeout 200: disconnect after 200s of inactivity
-        # --once: exit after one session
-        if os.name == 'nt': # Windows
-            cmd = f'{ttyd_path}.exe -p {port} -i 0.0.0.0 --idle-timeout 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
-        else: # Linux
-            cmd = f'{ttyd_path} -p {port} -i 0.0.0.0 --idle-timeout 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
+        # Construct command as a list for better security and argument handling
+        full_cmd = [
+            ttyd_path if os.name != 'nt' else f"{ttyd_path}.exe",
+            "-p", str(port),
+            "-i", "0.0.0.0",
+            "--idle-timeout", "200",
+            "--once",
+            sshpass_path,
+            "-p", password,
+            "ssh",
+            "-t",  # Force pseudo-terminal allocation
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            "-o", "ConnectTimeout=10",
+            f"{username}@{ip}"
+        ]
             
         try:
-            # Start ttyd process
-            subprocess.Popen(cmd, shell=True)
+            # Start ttyd process using list format (shell=False by default)
+            subprocess.Popen(full_cmd)
             
             # Give ttyd a moment to start
             time.sleep(1)
