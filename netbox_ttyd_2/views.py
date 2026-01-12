@@ -46,12 +46,13 @@ class DeviceTtyd2View(PermissionRequiredMixin, View):
 
         # Construct command
         # -p: port
-        # -i 200: idle timeout in seconds (200s)
+        # -i 0.0.0.0: listen on all interfaces
+        # --idle-timeout 200: disconnect after 200s of inactivity
         # --once: exit after one session
         if os.name == 'nt': # Windows
-            cmd = f'{ttyd_path}.exe -p {port} -i 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
+            cmd = f'{ttyd_path}.exe -p {port} -i 0.0.0.0 --idle-timeout 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
         else: # Linux
-            cmd = f'{ttyd_path} -p {port} -i 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
+            cmd = f'{ttyd_path} -p {port} -i 0.0.0.0 --idle-timeout 200 --once {sshpass_path} -p "{password}" ssh -o StrictHostKeyChecking=no {username}@{ip}'
             
         try:
             # Start ttyd process
