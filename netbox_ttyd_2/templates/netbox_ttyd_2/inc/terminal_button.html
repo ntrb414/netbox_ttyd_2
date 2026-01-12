@@ -1,0 +1,32 @@
+<button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#ttyd2Modal">
+    <i class="mdi mdi-console"></i> Terminal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="ttyd2Modal" tabindex="-1" aria-labelledby="ttyd2ModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{% url 'plugins:netbox_ttyd_2:device_ttyd_2' pk=device.pk %}" method="post" target="_blank">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="ttyd2ModalLabel">SSH Login (v2): {{ device.name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="ssh_username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="ssh_username" name="username" value="admin" required>
+          </div>
+          <div class="mb-3">
+            <label for="ssh_password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="ssh_password" name="password" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Commit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,2 @@
+include README.md
+recursive-include netbox_ttyd_2/templates *
